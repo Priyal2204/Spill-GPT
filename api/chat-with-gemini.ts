@@ -23,6 +23,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    if (!process.env.GOOGLE_GEMINI_API_KEY) {
+      console.error('GOOGLE_GEMINI_API_KEY is not set');
+      return res.status(500).json({ error: 'Server misconfiguration: missing API key' });
+    }
+
     const personalizedPrompt = prompt.replace('{{confession}}', confession);
 
     const response = await fetch(

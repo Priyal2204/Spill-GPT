@@ -34,7 +34,10 @@ const Index = () => {
         body: JSON.stringify({ confession, mood: selectedMood, prompt }),
       });
 
-      if (!chatRes.ok) throw new Error('Failed to get AI response');
+      if (!chatRes.ok) {
+        const errData = await chatRes.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to get AI response');
+      }
       const chatData = await chatRes.json();
 
       const aiResponse = chatData.response || "Oops, the vibe took a break! Try again? ✨";
@@ -56,7 +59,7 @@ const Index = () => {
       console.error("Error:", error);
       toast({
         title: "Oops! Something went wrong 😅",
-        description: "There was an issue getting your AI response. Please try again.",
+        description: error instanceof Error ? error.message : "There was an issue getting your AI response. Please try again.",
         variant: "destructive",
       });
     } finally {
