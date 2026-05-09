@@ -43,8 +43,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
 
     if (!response.ok) {
-      console.error('Gemini API error:', await response.text());
-      throw new Error('Failed to get AI response');
+      const errText = await response.text();
+      console.error('Gemini API error status:', response.status);
+      console.error('Gemini API error body:', errText);
+      return res.status(500).json({ error: `Gemini error ${response.status}: ${errText}` });
     }
 
     const data = await response.json();
