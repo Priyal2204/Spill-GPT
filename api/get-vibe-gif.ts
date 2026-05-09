@@ -6,6 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+function setCors(res: VercelResponse) {
+  Object.entries(corsHeaders).forEach(([k, v]) => res.setHeader(k, v));
+}
+
 const fallbackGifs: Record<string, string> = {
   roast: 'https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif',
   therapist: 'https://media.giphy.com/media/3o6Zt6KHxJTbXCnSvu/giphy.gif',
@@ -21,13 +25,10 @@ const moodQueries: Record<string, string> = {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method === 'OPTIONS') {
-    return res.status(200).set(corsHeaders).end();
-  }
+  setCors(res);
 
-  if (req.method !== 'POST') {
-    return res.status(405).set(corsHeaders).json({ error: 'Method not allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { mood } = req.body;
   const searchQuery = moodQueries[mood] || 'supportive friend';
@@ -48,9 +49,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       gifUrl = randomGif.images.fixed_height.url;
     }
 
-    return res.status(200).set(corsHeaders).json({ gifUrl });
+    return res.status(200).json({ gifUrl });
   } catch (error) {
     console.error('Error in get-vibe-gif:', error);
-    return res.status(500).set(corsHeaders).json({ gifUrl: fallbackGifs[mood] || fallbackGifs.roast });
+    return res.status(500).json({ gifUrl: fallbackGifs[mood] || fallbackGifs.roast });
   }
 }
